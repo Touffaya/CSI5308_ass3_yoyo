@@ -1,7 +1,8 @@
 University of Ottawa - CSI5308 - Principles of Distributed Computing
-Fall 2014 - Assignement 3 by Arthur Bourjac
 
 =================
+
+Fall 2014 - Assignement 3 by Arthur Bourjac
 
 This assignment is the implement of the Yoyo algorithm with Pruning seen in class.
 
