@@ -1,0 +1,10 @@
+# USEFUL LINKS
+
+C++ tutorial :
+http://openclassrooms.com/courses/programmez-avec-le-langage-c/votre-premier-programme-2
+
+Compiler tutorial :
+http://openclassrooms.com/courses/compilez-sous-gnu-linux
+
+Project structure :
+http://hiltmon.com/blog/2013/07/03/a-simple-c-plus-plus-project-structure/
