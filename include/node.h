@@ -3,21 +3,23 @@
 
 #include <vector>
 
-enum class State { SOURCE, INTERNAL, SINK, LEADER};
+enum class State { SLEEP, SOURCE, INTERNAL, SINK, LEADER};
 
 class Node
 {
 	public:
-		Node();
+		Node(int id);
+		int m_id;
 
+		int addNeighbour(Node* n);
 		void receive();
 
 	private:
-		int id;
-		std::vector<Node> neighbours;
-		std::vector<Node> parents;
-		std::vector<Node> children;
-		std::vector<int> values;
+		State m_state = State::SLEEP;
+		std::vector<Node*> m_neighbours;
+		std::vector<int> m_parents;
+		std::vector<int> m_children;
+		std::vector<int> m_values;
 
 		void send();
 };
