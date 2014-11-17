@@ -4,7 +4,7 @@
 .SUFFIXES:
 
 #var
-CC = g++
+CC = g++ -std=c++11
 SRCDIR = src
 BUILDDIR = build
 TARGET = bin/yoyo.exe

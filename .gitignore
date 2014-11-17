@@ -21,6 +21,9 @@ lib/*
 # Ignore any executables
 bin/*
 
+doc/*
+README.md
+
 # =========================
 # Operating System Files
 # =========================
@@ -49,4 +52,3 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
-doc/useful_links.txt
