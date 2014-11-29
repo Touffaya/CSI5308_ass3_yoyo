@@ -1,6 +1,4 @@
 #include <iostream>
-#include <unistd.h>
-#include <sys/param.h>
 
 #include "graph.h"
 
@@ -18,6 +16,7 @@ int main(int argc, char* argv[])
  	// }
 
   	Graph g(argv[1]);
+  	g.yoyo();
 
   	return 0;
 }

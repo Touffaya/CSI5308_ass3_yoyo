@@ -9,10 +9,12 @@
 class Graph
 {
 	public:
-		Graph(std::string filePath);
+		Graph(std::string p_filePath);
+		int yoyo();
 
 	private:
 		std::unordered_map<int,Node> m_nodes;
+		void buildDAG();
 };
 
 #endif
