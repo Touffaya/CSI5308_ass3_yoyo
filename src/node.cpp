@@ -15,14 +15,29 @@ Node::Node(int v_id)
 	unordered_map<int,Node*> m_children();
 }
 
-int Node::getId()
+int Node::Id()
 {
 	return m_id;
 }
 
-unsigned long Node::getCountMsg()
+unsigned long Node::MsgCount()
 {
 	return s_msgCount;
+}
+
+unordered_map<int,Node*>* Node::Neighbours()
+{
+	return &m_neighbours;
+}
+
+unordered_map<int,Node*>* Node::Parents()
+{
+	return &m_parents;
+}
+
+unordered_map<int,Node*>* Node::Children()
+{
+	return &m_children;
 }
 
 void Node::addNeighbour(int p_id,Node* p_n)
@@ -35,7 +50,6 @@ void Node::startBuildingDAG()
 	for (pair<int,Node*> pair : m_neighbours) {
 		sendIdDAG(pair.second);
 	}
-
 }
 
 void Node::sendIdDAG(Node* p_to)
@@ -46,10 +60,10 @@ void Node::sendIdDAG(Node* p_to)
 
 void  Node::receiveIdDAG(Node* p_from)
 {
-	if (p_from->getId() < m_id) {
-		m_parents.insert(make_pair(p_from->getId(),p_from));
+	if (p_from->Id() < m_id) {
+		m_parents.insert(make_pair(p_from->Id(),p_from));
 	} else {
-		m_children.insert(make_pair(p_from->getId(),p_from));
+		m_children.insert(make_pair(p_from->Id(),p_from));
 	}
 
 	if (m_parents.size()+m_children.size() == m_neighbours.size()) {
@@ -61,4 +75,9 @@ void  Node::receiveIdDAG(Node* p_from)
 			m_state = State::INTERNAL;
 		}
 	}
+}
+
+void Node::yoyo()
+{
+	cout << "Node " << m_id << endl;
 }

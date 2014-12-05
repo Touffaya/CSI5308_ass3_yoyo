@@ -10,10 +10,15 @@ class Node
 {
 	public:
 		Node(int v_id);
-		int getId();
-		static unsigned long getCountMsg();
+		int Id();
+		static unsigned long MsgCount();
+		std::unordered_map<int,Node*>* Neighbours();
+		std::unordered_map<int,Node*>* Parents();
+		std::unordered_map<int,Node*>* Children();
+
 		void addNeighbour(int p_id, Node* p_n);
 		void startBuildingDAG();
+		void yoyo();
 
 	private:
 		static unsigned long s_msgCount;

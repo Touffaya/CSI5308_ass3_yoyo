@@ -4,7 +4,7 @@
 .SUFFIXES:
 
 #var
-CC = g++ -std=c++11
+CC = x86_64-w64-mingw32-g++ -std=c++11 -m64
 SRCDIR = src
 BUILDDIR = build
 TARGET = bin/yoyo.exe
@@ -12,7 +12,7 @@ TARGET = bin/yoyo.exe
 SRCEXT = cpp
 SOURCES = $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -pthread
 INC = -I include
 
 #create exec file yoyo.exe
