@@ -1,10 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <thread>
 #include <unistd.h>
 #include <sys/param.h>
-
 
 #include "graph.h"
 
@@ -26,18 +24,16 @@ Graph::Graph(string p_filePath)
 
   	string path = cwd+"/"+p_filePath;
 	ifstream file(path);
-	if (!file)
-	{
+	if (!file) {
 		cout << "ERROR: Can't open file " << path << endl;
 	}
-	else
-	{
+	else {
 		cout << "File opened.\n" << endl;
 		string line;
 	   	while (getline(file, line))
 		{
 			istringstream iss(line);
-			int id(0);
+			unsigned long id(0);
 			if (!(iss >> id)) {break;}
 			shared_ptr<Node> ptrN = std::make_shared<Node>(id);
 			m_nodes.insert(make_pair(id,ptrN));
@@ -46,12 +42,10 @@ Graph::Graph(string p_filePath)
 
 	file.clear();
 	file.seekg(0, ios::beg);
-	if (!file)
-	{
+	if (!file) {
 		cout << "ERROR: Can't open file " << path << endl;
 	}
-	else
-	{
+	else {
 		string line;
 	   	while (getline(file, line))
 		{	
@@ -78,13 +72,9 @@ int Graph::yoyo()
 	cout << "Processing algorithm Yo-Yo..." << endl;
 	buildDAG();
 
-	vector<thread> thrs;
 	for (pair<int, shared_ptr<Node>> node : m_nodes) {
-		thrs.push_back(thread(&Node::yoyo,node.second.get()));
-	}
-
-	for  (thread &thr : thrs) {
-		thr.join();
+		node.second.get()->execute();
+		node.second.get()->join();
 	}
 
 	return 0;

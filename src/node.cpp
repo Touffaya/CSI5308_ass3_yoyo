@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <chrono>
 
 #include "node.h"
 
@@ -8,24 +9,42 @@ using namespace std;
 /* --------------- STATIC --------------- */
 
 unsigned long Node::s_msgCount = 0;
+mutex Node::s_mtxMsgCount;
 
-void Node::sendIdDAG(Node* p_from, Node* p_to)
+void Node::sendIdDAG(Node* p_from, unsigned long p_id, Node* p_to)
 {
 	s_msgCount++;
-	p_to->receiveIdDAG(p_from);
+	p_to->receiveIdDAG(p_from, p_id);
+}
+
+void Node::sendIdYoyo(Node* p_from, unsigned long p_id, Node* p_to)
+{
+	s_mtxMsgCount.lock();
+	s_msgCount++;
+	s_mtxMsgCount.unlock();
+	p_to->receiveIdYoyo(p_from, p_id);
+}
+
+void Node::sendAnswerYoyo(Node* p_from, bool p_answer, Node* p_to, bool p_prune)
+{
+	s_mtxMsgCount.lock();
+	s_msgCount++;
+	s_mtxMsgCount.unlock();
+	p_to->receiveAnswerYoyo(p_from, p_answer, p_prune);
 }
 
 /* --------------- PUBLIC --------------- */
 
-Node::Node(int v_id)
+Node::Node(unsigned long v_id)
 {
 	m_id = v_id;
-	unordered_multiset<Node*> m_neighbours();
-	unordered_multiset<Node*> m_parents();
-	unordered_multiset<Node*> m_children();
+	multiset<Node*> m_neighbours();
+	multiset<Node*> m_children();
+	multimap<unsigned long,Node*> m_valuesReceived;
+	multiset<Node*> m_negativeAnswers;
 }
 
-int Node::Id()
+unsigned long Node::Id()
 {
 	return m_id;
 }
@@ -35,19 +54,15 @@ unsigned long Node::MsgCount()
 	return s_msgCount;
 }
 
-unordered_multiset<Node*>* Node::Neighbours()
+std::thread Node::execute()
 {
-	return &m_neighbours;
+	thread m_thread(&Node::yoyo,this);
+	return m_thread;
 }
 
-unordered_multiset<Node*>* Node::Parents()
+void Node::join()
 {
-	return &m_parents;
-}
-
-unordered_multiset<Node*>* Node::Children()
-{
-	return &m_children;
+	m_thread.join();
 }
 
 /* --------------- PRIVATE --------------- */
@@ -60,32 +75,69 @@ void Node::addNeighbour(Node* p_n)
 void Node::startBuildingDAG()
 {	
 	for (Node* neighbour : m_neighbours) {
-		Node::sendIdDAG(this,neighbour);
+		Node::sendIdDAG(this,m_id,neighbour);
 	}
 }
 
-void  Node::receiveIdDAG(Node* p_from)
+void  Node::receiveIdDAG(Node* p_from, unsigned long p_id)
 {
-	if (p_from->Id() < m_id) {
-		m_parents.insert(p_from);
-	} else {
+	if (p_id < m_id) {
+		m_parentsCount++;
+	}
+	else {
 		m_children.insert(p_from);
 	}
 
-	if (m_parents.size()+m_children.size() == m_neighbours.size()) {
-		if (m_parents.empty()) {
+	if (m_parentsCount+m_children.size() == m_neighbours.size()) {
+		if (m_parentsCount == 0) {
 			m_state = State::SOURCE;
-		} else if (m_children.empty()) {
-			m_state = State::SINK; 
-		} else {
+		}
+		else if (m_children.empty()) {
+			m_state = State::SINK;
+		}
+		else {
 			m_state = State::INTERNAL;
 		}
 	}
 }
 
+void  Node::receiveIdYoyo(Node* p_from, unsigned long p_id)
+{
+	m_mtxValues.lock();
+	m_valuesReceived.insert(make_pair(p_id,p_from));
+	m_mtxValues.unlock();
+	m_condValues.notify_one();
+}
+
+void Node::receiveAnswerYoyo(Node* p_from, bool p_answer, bool p_prune)
+{
+	lock_guard<mutex> guardState(m_mtxState);
+	m_mtxAnswers.lock();
+	m_answersReceived++;
+	if (!p_answer) {
+		m_answer = p_answer;
+		m_negativeAnswers.insert(p_from);
+	} else if (p_prune) {
+		lock_guard<mutex> guardChildren(m_mtxChildren);
+		m_children.erase(p_from);
+		if (m_children.empty()) {
+			// if (m_state == State::SOURCE) m_state = State::LEADER;
+			// else {
+			// 	m_state = State::SINK;
+			// 	m_valuesSent = 0;
+			// }
+			m_state = (m_state == State::SOURCE ? State::LEADER : State::SINK);
+		}
+	}
+	m_mtxAnswers.unlock();
+	m_condAnswers.notify_one();
+}
+
 void Node::yoyo()
 {
-	// while(true) {
+	bool done = false;
+	while(!done) {
+		m_mtxState.lock();
 		switch (m_state) {
 			case State::SOURCE :
 				processCaseSource();
@@ -97,41 +149,142 @@ void Node::yoyo()
 				processCaseSink();
 				break;
 			case State::LEADER :
-				processCaseLeader();
+				done = processCaseLeader();
 				break;
 			case State::IDLE :
-				processCaseIdle();
+				done = processCaseIdle();
 				break;
 		}
-	// }
+		m_mtxState.unlock();
+		this_thread::sleep_for(chrono::milliseconds{ 500 });
+	}
 }
 
-int Node::processCaseSource()
+void Node::processCaseSource()
 {
-	if (m_children.size() == 0) {
-		m_state = State::LEADER;
-		return 1;
+	if (m_valuesSent == 0) {
+		lock_guard<mutex> guardChildren(m_mtxChildren);
+		for (Node* child : m_children) {
+			Node::sendIdYoyo(this, m_id, child);
+			m_valuesSent++;
+		}
+		m_answersReceived = 0;
+		m_answer = true;
+		m_negativeAnswers.clear();
+	}
+	else {
+		unique_lock<mutex> uniqueLockAnswers(m_mtxAnswers);
+		while (m_answersReceived < m_valuesSent) {
+			m_condAnswers.wait(uniqueLockAnswers);
+		}
+
+		if (!m_answer) {
+			for (Node* child : m_negativeAnswers) {
+				m_children.erase(child);
+				m_parentsCount++;
+			}
+			m_state = (m_children.empty() ? State::SINK : State::INTERNAL);
+		}
+		m_valuesSent = 0;
+	}
+}
+
+void Node::processCaseInternal()
+{
+	if (m_valuesSent == 0) {
+		unique_lock<mutex> uniqueLockValues(m_mtxValues);
+		while (m_valuesReceived.size() < m_parentsCount) {
+			m_condValues.wait(uniqueLockValues);
+		}
+		
+		auto candidate = *m_valuesReceived.begin();
+		unsigned long candidateId = ( candidate.first < m_id ? candidate.first : m_id );
+		for (Node* child : m_children) {
+			Node::sendIdYoyo(this, candidateId, child);
+			m_valuesSent++;
+		}
+
+		m_valuesReceived.clear();
+		m_answer = true;
+		m_answersReceived = 0;
+		m_negativeAnswers.clear();
 	}
 
-	return 0;
+	else {
+		unique_lock<mutex> uniqueLockAnswers(m_mtxAnswers);
+		while (m_answersReceived < m_valuesSent) {
+			m_condAnswers.wait(uniqueLockAnswers);
+		}
+		
+		if (!m_answer) {
+			for (Node* child : m_negativeAnswers) {
+				m_children.erase(child);
+				m_parentsCount++;
+			}
+		}
+
+		unsigned long min; bool answer, prune, firstIt = true;
+		for (auto parent : m_valuesReceived) {
+			if (firstIt) min = parent.first;
+			answer = (m_answer && parent.first == min);
+			prune = (answer && !firstIt);
+			Node::sendAnswerYoyo(this, answer, parent.second, prune);
+			firstIt = false;
+
+			if (prune) {
+				m_parentsCount--;
+			}
+			else if (!answer) {
+				m_parentsCount--;
+				m_children.insert(parent.second);
+			}
+		}
+
+		m_valuesSent = 0;
+	}
 }
 
-int Node::processCaseInternal()
+void Node::processCaseSink()
 {
-	return 0;
+	unique_lock<mutex> uniqueLockValues(m_mtxValues);
+	while (m_valuesReceived.size() < m_parentsCount ) {
+		m_condValues.wait(uniqueLockValues);
+	}
+
+	unsigned long min = m_valuesReceived.cbegin()->first;
+	if (m_valuesReceived.count(min) == m_valuesReceived.size()) {
+		for (auto parent : m_valuesReceived) {
+			Node::sendAnswerYoyo(this, true, parent.second, true);
+		}
+		m_parentsCount = 0;
+		m_state = State::IDLE;
+	}
+	else {
+		bool answer, prune, firstIt = true;
+		for (auto parent : m_valuesReceived) {
+			answer = (parent.first == min);
+			prune = (answer && !firstIt);
+			Node::sendAnswerYoyo(this, answer, parent.second, prune);
+			firstIt = false;
+
+			if (prune) {
+				m_parentsCount--;
+			}
+			else if (!answer) {
+				m_parentsCount--;
+				m_children.insert(parent.second);
+			}
+		}
+		m_state = State::INTERNAL;
+	}
 }
 
-int Node::processCaseSink()
+bool Node::processCaseLeader()
 {
-	return 0;
+	return false;
 }
 
-int Node::processCaseLeader()
+bool Node::processCaseIdle()
 {
-	return 0;
-}
-
-int Node::processCaseIdle()
-{
-	return 0;
+	return false;
 }
