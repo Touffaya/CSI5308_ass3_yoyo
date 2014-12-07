@@ -2,35 +2,44 @@
 #define DEF_NODE
 
 #include <vector>
-#include <unordered_map>
+#include <unordered_set>
 
-enum class State {SLEEP, SOURCE, INTERNAL, SINK, LEADER};
+enum class State {SOURCE, INTERNAL, SINK, IDLE, LEADER};
 
 class Node
 {
 	public:
+		/* --------------- ATTRIBUTES --------------- */		
 		Node(int v_id);
 		int Id();
-		static unsigned long MsgCount();
-		std::unordered_map<int,Node*>* Neighbours();
-		std::unordered_map<int,Node*>* Parents();
-		std::unordered_map<int,Node*>* Children();
 
-		void addNeighbour(int p_id, Node* p_n);
+		/* --------------- FUNCTIONS --------------- */		
+		static unsigned long MsgCount();
+		std::unordered_multiset<Node*>* Neighbours();
+		std::unordered_multiset<Node*>* Parents();
+		std::unordered_multiset<Node*>* Children();
+		void addNeighbour(Node* p_n);
 		void startBuildingDAG();
 		void yoyo();
 
 	private:
+		/* --------------- ATRIBUTES --------------- */
 		static unsigned long s_msgCount;
-		State m_state = State::SLEEP;
+		State m_state;
 		int m_id;
-		std::unordered_map<int,Node*> m_neighbours;
-		std::unordered_map<int,Node*> m_parents;
-		std::unordered_map<int,Node*> m_children;		
+		std::unordered_multiset<Node*> m_neighbours;
+		std::unordered_multiset<Node*> m_parents;
+		std::unordered_multiset<Node*> m_children;		
 		std::vector<int> m_values;
 
-		void sendIdDAG(Node* p_to);
+		/* --------------- FUNCTIONS --------------- */
+		static void sendIdDAG(Node* p_from, Node* p_to);
 		void receiveIdDAG(Node* p_from);
+		int processCaseSource();
+		int processCaseInternal();
+		int processCaseSink();
+		int processCaseLeader();
+		int processCaseIdle();
 };
 
 #endif

@@ -11,3 +11,6 @@ http://hiltmon.com/blog/2013/07/03/a-simple-c-plus-plus-project-structure/
 
 Design patterns :
 http://www.bogotobogo.com/DesignPatterns/introduction.php
+
+Multi thread :
+http://www.codeproject.com/Articles/21114/Creating-a-C-Thread-Class

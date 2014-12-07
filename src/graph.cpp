@@ -10,6 +10,8 @@
 
 using namespace std;
 
+/* --------------- PUBLIC --------------- */
+
 Graph::Graph(string p_filePath)
 {
 	cout << "Trying to open " << p_filePath << " ..." << endl;
@@ -58,7 +60,7 @@ Graph::Graph(string p_filePath)
 			if (!(iss >> id)) {break;}
 			while (iss >> link)
 			{
-				m_nodes.at(id).get()->addNeighbour(link,m_nodes.at(link).get());
+				m_nodes.at(id).get()->addNeighbour(m_nodes.at(link).get());
 			}
 		}
 	}
@@ -87,7 +89,9 @@ int Graph::yoyo()
 
 	return 0;
 }
- 
+
+/* --------------- PRIVATE --------------- */
+
 void Graph::buildDAG()
 {
 
