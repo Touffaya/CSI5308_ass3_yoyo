@@ -17,6 +17,7 @@
 */
 
 #include <iostream>
+#include <fstream>
 #include <string>
 
 #include "graph.h"
@@ -25,37 +26,31 @@ using namespace std;
 
 int main(int argc, char* argv[])
 { 
-	string copyright = "Yoyo-Algorithm  Copyright (C) 2014  Arthur Bourjac\n";
-    copyright += "This program comes with ABSOLUTELY NO WARRANTY;\n";
-    copyright += "This is free software, and you are welcome to redistribute it\n";
-    copyright += "under certain conditions;\n\n\n";
-    cout << copyright;
+	string option = argv[1];
+	if (option == "-o") {
+		Graph g(argv[2]);
+		g.yoyo(true);	
+	} else if (option == "-m") {
+		fstream fs;
+  		fs.open (argv[3], fstream::in | fstream::out | fstream::app);
 
-	string usage = "Usage : yoyo -f file | -d dir | -r number\n";
- 	usage += "Use with either\n";
-	usage += "\t-f : process one graph (specify the file)\n";
-	usage += "\t-d : process multiple graphs (specify the directory)\n";
-	usage += "\t-r : process random graphs (specify the number of graphs)\n";
+		Graph g(argv[2]);
+		g.yoyo(false);	
 
- 	if (argc != 3) {
- 		cout << usage;
- 	}
- 	else {
- 		string option = argv[1];
- 		if (option == "-f") {
-			Graph g(argv[2]);
-			g.yoyo(true);	
- 		}
- 		else if (option == "-d") {
+		fs << g.Nodes()->size() << ";" << g.MsgCount() << endl;
+  		fs.close();
+	}
 
- 		}
- 		else if (option == "-r") {
+	// if (argc == 3 && option == "-f") {
+	// }
+	// else if (argc == 4 && option == "-d") {
+	// }
+	// else if (argc == 4 && option == "-r") {
 
- 		}
- 		else {
- 			cout << usage;
- 		}
- 	}
+	// }
+	// else {
+	// 	cout << usage;
+	// }
 
   	return 0;
 }

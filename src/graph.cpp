@@ -35,7 +35,7 @@ Graph::Graph(string p_filePath)
 {
 	unordered_multimap<unsigned long,Node*> temp_nodes;
 		
-	cout << "Trying to open " << p_filePath << " ..." << endl;
+	cout << "Opening " << p_filePath << "...";
 
 	string cwd;
 	char *temp = new char[MAXPATHLEN];
@@ -48,11 +48,11 @@ Graph::Graph(string p_filePath)
   	string path = cwd+"/"+p_filePath;
 	ifstream file(path);
 	if (!file) {
-		cout << "ERROR: Can't open file " << path << endl;
+		cout << endl << "ERROR: Can't open file " << path << endl;
 		exit(0);
 	}
 	else {
-		cout << "File opened.\n" << endl;
+		cout << "done.\n" << endl;
 		string line;
 	   	while (getline(file, line))
 		{
@@ -68,7 +68,7 @@ Graph::Graph(string p_filePath)
 	file.clear();
 	file.seekg(0, ios::beg);
 	if (!file) {
-		cout << "ERROR: Can't open file " << path << endl;
+		cout << endl << "ERROR: Can't open file " << path << endl;
 		exit(0);
 	}
 	else {
@@ -112,7 +112,7 @@ unsigned long Graph::countNodes(Node* p_node)
 
 void Graph::yoyo(bool p_verb)
 {
-	if (p_verb) cout << "Processing algorithm Yo-Yo..." << endl;
+	cout << "Processing algorithm Yo-Yo...";
 	buildDAG();
 	time_t start, end;
 
@@ -129,6 +129,7 @@ void Graph::yoyo(bool p_verb)
 	    if (node_thr.joinable()) node_thr.join();
 	}
 	time(&end);
+	cout << "done" << endl;
 	if (p_verb) cout << "... ends at " << asctime(localtime(&end));
 	if (p_verb) cout << "Processing time : " << to_string(difftime(end,start)) << " secondes" << endl;;
 	if (p_verb) cout << "Leader " << m_leader->Id() << " found in " << m_msgCount << " messages." << endl;
@@ -137,6 +138,11 @@ void Graph::yoyo(bool p_verb)
 void Graph::assignLeader(Node& p_leader)
 {
 	m_leader = &p_leader;
+}
+
+unsigned long Graph::MsgCount()
+{
+	return m_msgCount;
 }
 
 void Graph::buildDAG()

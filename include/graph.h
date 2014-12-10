@@ -45,6 +45,7 @@ class Graph
 		void sendIdYoyo(Node& p_from, unsigned long p_id, Node& p_to);
 		void sendAnswerYoyo(Node& p_from, bool p_answer, bool p_prune, Node& p_to);
 
+		unsigned long MsgCount();
 		void assignLeader(Node& p_leader);
 
 #ifndef NDEBUG
