@@ -1,3 +1,21 @@
+/*
+	Yoyo-Algorithm : processing of yoyo-algorithm for message complexity.
+    Copyright (C) 2014  Arthur Bourjac
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -92,28 +110,28 @@ unsigned long Graph::countNodes(Node* p_node)
 }
 
 
-void Graph::yoyo()
+void Graph::yoyo(bool p_verb)
 {
-	cout << "Processing algorithm Yo-Yo..." << endl;
+	if (p_verb) cout << "Processing algorithm Yo-Yo..." << endl;
 	buildDAG();
 	time_t start, end;
 
 	time(&start);
-	cout << "Start at " << asctime(localtime(&start)) << "..." <<endl;;
+	if (p_verb) cout << "Starts at " << asctime(localtime(&start));;
 	vector<thread> v_threads(m_nodes.size());
 	for (auto node : m_nodes) {
 		v_threads.push_back(thread(&Node::yoyo,node.first.get()));
 	}
 	for (thread& node_thr : v_threads) {
 #ifndef NDEBUG
-	    // cout << "thread "<< node_thr.get_id() <<" joining" << endl;
+	   cout << "thread "<< node_thr.get_id() <<" joining" << endl;
 #endif
 	    if (node_thr.joinable()) node_thr.join();
 	}
 	time(&end);
-	cout << "Leader " << m_leader->Id() << " found in " << m_msgCount << "messages." << endl;
-	cout << "... end at " << asctime(localtime(&end)) << endl;
-	cout << "Processing time : " << to_string(difftime(start,end)) << "secondes" << endl;;
+	if (p_verb) cout << "... ends at " << asctime(localtime(&end));
+	if (p_verb) cout << "Processing time : " << to_string(difftime(end,start)) << " secondes" << endl;;
+	if (p_verb) cout << "Leader " << m_leader->Id() << " found in " << m_msgCount << " messages." << endl;
 }
 
 void Graph::assignLeader(Node& p_leader)

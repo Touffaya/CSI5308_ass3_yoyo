@@ -1,3 +1,21 @@
+/*
+	Yoyo-Algorithm : processing of yoyo-algorithm for message complexity.
+    Copyright (C) 2014  Arthur Bourjac
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 // #define NDEBUG
 #include <iostream>
 #include <algorithm>
@@ -545,8 +563,8 @@ void Node::processCaseSink()
 
 bool Node::processCaseLeader()
 {
-#ifndef NDEBUG
 	m_graph->assignLeader(*this);
+#ifndef NDEBUG
 	m_graph->writeDebug(to_string(m_id)+" is the LEADER");
 #endif
 	return true;
