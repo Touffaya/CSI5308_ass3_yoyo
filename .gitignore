@@ -19,7 +19,6 @@ build
 lib/*
 
 # Ignore any executables
-bin/*
 
 doc/*
 README.md
