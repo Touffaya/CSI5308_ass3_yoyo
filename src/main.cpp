@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include "graph.h"
 
@@ -6,19 +7,36 @@ using namespace std;
 
 int main(int argc, char* argv[])
 { 
- 	// if (argc != 3) 
- 	// {
- 	// 	cout << "Usage : yoyo [-d dir | -f file | -a number]" << endl;
- 	// 	cout << "Use with either" << endl;
- 	// 	cout << "\t-d : directory where the graph files are" << endl;
- 	// 	cout << "\t-f : specify the file to process only one graph" << endl;
- 	// 	cout << "\t-a : process number of auto-generated graphs" << endl;
- 	// }
+	string usage = "Usage : yoyo -f file | -d dir | -r number\n";
+ 	usage += "Use with either\n";
+	usage += "\t-f : process one graph (specify the file)\n";
+	usage += "\t-d : process multiple graphs (specify the directory)\n";
+	usage += "\t-r : process random graphs (specify the number of graphs)\n";
 
-	Graph g(argv[1]);
-	g.yoyo();
+ 	if (argc != 3) {
+ 		cout << usage;
+ 	}
+ 	else {
+ 		string option = argv[1];
+ 		if (option == "-f") {
+			Graph g(argv[2]);
+			/* debug */
+			// for (auto node : *g.Nodes()) {
+			// 	cout << node.first.get()->Id() << " / " << node.second << endl;
+			// }
+			/* end debug */
+			g.yoyo();	
+ 		}
+ 		else if (option == "-d") {
 
-	cout << "End main" << endl;
+ 		}
+ 		else if (option == "-r") {
 
-  return 0;
+ 		}
+ 		else {
+ 			cout << usage;
+ 		}
+ 	}
+
+  	return 0;
 }
