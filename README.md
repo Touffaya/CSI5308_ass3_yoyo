@@ -54,6 +54,9 @@ Special thanks to :
 Any questions, remarks or comments are welcome, write to
 	arthur [dot] bourjac [at] gmail [dot] com
 
+December 09th, 2014
+https://github.com/Touffaya/CSI5308_ass3_yoyo
+
 
 
 
