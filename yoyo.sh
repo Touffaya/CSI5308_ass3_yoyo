@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 CPR="Yoyo-Algorithm  Copyright (C) 2014  Arthur Bourjac\n
 This program comes with ABSOLUTELY NO WARRANTY;\n

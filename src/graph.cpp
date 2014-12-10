@@ -129,7 +129,7 @@ void Graph::yoyo(bool p_verb)
 	    if (node_thr.joinable()) node_thr.join();
 	}
 	time(&end);
-	cout << "done" << endl;
+	cout << "done" << endl << endl;
 	if (p_verb) cout << "... ends at " << asctime(localtime(&end));
 	if (p_verb) cout << "Processing time : " << to_string(difftime(end,start)) << " secondes" << endl;;
 	if (p_verb) cout << "Leader " << m_leader->Id() << " found in " << m_msgCount << " messages." << endl;
